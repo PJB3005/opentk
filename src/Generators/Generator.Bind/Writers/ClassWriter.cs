@@ -238,6 +238,11 @@ namespace Bind.Writers
                 var nm = settings.NameContainer.ClassName;
                 sw.WriteLine("    public partial class " + settings.ClassName + " : NativeLibraryBase, I" + settings.ClassName);
                 sw.WriteLine("    {");
+                sw.WriteLine("        public static {0} GetAPI()", settings.ClassName);
+                sw.WriteLine("        {");
+                sw.WriteLine("            return APILoader.Load<{0}>(new {1}());", settings.ClassName, settings.NameContainer.ClassName);
+                sw.WriteLine("        }");
+                sw.WriteLine();
                 sw.WriteLine("        /// <inheritdoc cref=\"NativeLibraryBase\"/>");
                 sw.WriteLine("        protected " + settings.ClassName + "(string path, ImplementationOptions options)");
                 sw.WriteLine("            : base(path, options)");

@@ -21,16 +21,15 @@ namespace Bind.Generators.GL.Core
         public override string OutputSubfolder => "OpenGL";
 
         /// <inheritdoc/>
-        public override string ProfileName => "glcore";
-
-        /// <inheritdoc/>
-        [NotNull]
-        public override string BaseProfileName => "gl";
-
-        /// <inheritdoc/>
         public override string Namespace => "OpenToolkit.OpenGL.Core";
 
         /// <inheritdoc/>
         public override string SpecificationDocumentationPath => "gl4";
+
+        /// <inheritdoc/>
+        public override string ApiName => "gl";
+
+        /// <inheritdoc/>
+        public override string ApiProfile => "core";
     }
 }

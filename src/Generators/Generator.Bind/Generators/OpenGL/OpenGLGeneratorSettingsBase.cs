@@ -46,7 +46,7 @@ namespace Bind.Generators.Bases
         public override string SpecificationFile => Path.Combine("OpenGL", "signatures.xml");
 
         /// <inheritdoc/>
-        public override string BaseProfileName => null;
+        public override string KhrSpecificationFile => Path.Combine("OpenGL", "gl.xml");
 
         /// <inheritdoc />
         public override VersionRange Versions => new VersionRange();

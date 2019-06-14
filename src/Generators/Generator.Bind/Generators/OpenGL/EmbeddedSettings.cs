@@ -21,6 +21,12 @@ namespace Bind.Generators.ES
     internal class EmbeddedSettings : OpenGLGeneratorSettingsBase
     {
         /// <inheritdoc/>
+        public override string ApiName => "gles2";
+
+        /// <inheritdoc/>
+        public override string ApiProfile => null;
+
+        /// <inheritdoc/>
         public override string APIIdentifier => "OpenGLES";
 
         /// <inheritdoc/>
@@ -28,9 +34,6 @@ namespace Bind.Generators.ES
 
         /// <inheritdoc/>
         public override string SpecificationDocumentationPath => "es3";
-
-        /// <inheritdoc/>
-        public override string ProfileName => "gles2";
 
         /// <inheritdoc/>
         public override VersionRange Versions => new VersionRange(new Version(2, 0), new Version(3, 2));

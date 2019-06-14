@@ -44,11 +44,6 @@ namespace Bind
         internal static CommandLineArguments Arguments { get; private set; }
 
         /// <summary>
-        /// Gets a list of generator settings for which bindings should be generated.
-        /// </summary>
-        private static readonly List<IGeneratorSettings> Generators = new List<IGeneratorSettings>();
-
-        /// <summary>
         /// Gets a dictionary of cached profiles that have been read from signature files.
         /// </summary>
         private static readonly ConcurrentDictionary<string, IReadOnlyList<ApiProfile>> _cachedProfiles =
@@ -65,7 +60,7 @@ namespace Bind
         /// </summary>
         /// <param name="args">A set of command-line arguments and switches to be parsed.</param>
         /// <returns>An integer, indicating success or failure. On a failure, a nonzero value is returned.</returns>
-        private static int Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
             // force the GC to a suitable mode.
             GCSettings.LatencyMode = GCLatencyMode.Batch;
@@ -81,10 +76,10 @@ namespace Bind
                 return 1;
             }
 
-            CreateGenerators();
+            var generators = CreateGenerators();
 
             var stopwatch = Stopwatch.StartNew();
-            Generators.ForEach(GenerateBindings);
+            await Task.WhenAll(generators.Select(p => Task.Run(() => GenerateBindings(p))));
             stopwatch.Stop();
 
             Console.WriteLine();
@@ -110,7 +105,15 @@ namespace Bind
         /// <param name="generatorSettings">The settings describing the API.</param>
         private static void GenerateBindings([NotNull] IGeneratorSettings generatorSettings)
         {
+            var khrSignaturePath = Path.Combine(Arguments.InputPath, "OpenGL", "gl.xml");
+
+            // Parse data for Khronos' XML registry.
+            // This makes it easier to work with.
+            var parsed = GLXmlReader.ParseXmlRegistry(generatorSettings, khrSignaturePath);
+
+            /*
             var signaturePath = Path.Combine(Arguments.InputPath, generatorSettings.SpecificationFile);
+            GLXmlReader.GetAvailableProfiles(khrSignaturePath);
             if (!_cachedProfiles.TryGetValue(signaturePath, out var profiles))
             {
                 profiles = SignatureReader.GetAvailableProfiles(signaturePath).ToList();
@@ -166,18 +169,20 @@ namespace Bind
                 mappedProfile,
                 bakedDocs,
                 generatorSettings.NameContainer);
+                */
         }
 
         /// <summary>
         /// Populates the <see cref="Generators"/> field with the generators relevant for the current run.
         /// </summary>
-        private static void CreateGenerators()
+        private static List<IGeneratorSettings> CreateGenerators()
         {
+            var list = new List<IGeneratorSettings>();
             if (Arguments.TargetAPIs.Contains(TargetAPI.All))
             {
-                Generators.Add(new DesktopCompatibilitySettings());
-                Generators.Add(new DesktopSettings());
-                Generators.Add(new EmbeddedSettings());
+                list.Add(new DesktopCompatibilitySettings());
+                list.Add(new DesktopSettings());
+                list.Add(new EmbeddedSettings());
             }
             else
             {
@@ -186,19 +191,21 @@ namespace Bind
                     switch (targetAPI)
                     {
                         case TargetAPI.DesktopCompatibility:
-                            Generators.Add(new DesktopCompatibilitySettings());
+                            list.Add(new DesktopCompatibilitySettings());
                             break;
                         case TargetAPI.Desktop:
-                            Generators.Add(new DesktopSettings());
+                            list.Add(new DesktopSettings());
                             break;
                         case TargetAPI.Embedded:
-                            Generators.Add(new EmbeddedSettings());
+                            list.Add(new EmbeddedSettings());
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                 }
             }
+
+            return list;
         }
     }
 }

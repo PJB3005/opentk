@@ -54,7 +54,7 @@ namespace OpenTK.Convert
             }
         }
 
-        private static string FunctionParameterType(XElement e)
+        private static (string type, string group) FunctionParameterType(XElement e)
         {
             // Parse the C-like <proto> element. Possible instances:
             // Return types:
@@ -62,7 +62,6 @@ namespace OpenTK.Convert
             //   -> <returns>void</returns>
             // - <proto group="String">const <ptype>GLubyte</ptype> *<name>glGetString</name></proto>
             //   -> <returns>String</returns>
-            // Note: group attribute takes precedence if it exists. This matches the old .spec file format.
             // Parameter types:
             // - <param><ptype>GLenum</ptype> <name>shadertype</name></param>
             //   -> <param name="shadertype" type="GLenum" />
@@ -70,28 +69,11 @@ namespace OpenTK.Convert
             //   -> <param name="length" type="GLsizei" count="1" />
             var proto = e.Value;
             var name = e.Element("name")?.Value;
-            var group = e.Attribute("group");
+            var group = e.Attribute("group")?.Value;
 
             var ret = proto.Remove(proto.LastIndexOf(name, StringComparison.Ordinal)).Trim();
 
-            if (group == null)
-            {
-                return ret;
-            }
-
-            var words = ret.Split(" ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            if (words[0] == "struct" || words[0] == "const")
-            {
-                words[1] = group.Value;
-            }
-            else
-            {
-                words[0] = group.Value;
-            }
-
-            ret = string.Join(" ", words);
-
-            return ret;
+            return (ret, group);
         }
 
         private static IEnumerable<string> GetApiNames(XElement feature)
@@ -443,42 +425,40 @@ namespace OpenTK.Convert
             var cmd_name = FunctionName(command);
             var name = new XAttribute("name", cmd_name);
 
+            var (retType, retGroup) = FunctionParameterType(command.Element("proto"));
+            retType = retType.Replace("const", string.Empty).Replace("struct", string.Empty).Trim();
+
             var returns = new XElement
             (
                 "returns",
-                new XAttribute
-                (
-                    "type",
-                    FunctionParameterType(command.Element("proto"))
-                        .Replace("const", string.Empty)
-                        .Replace("struct", string.Empty)
-                        .Replace("String *", "String")
-                        .Trim()
-                )
+                new XAttribute("type", retType)
             );
+
+            if (retGroup != null)
+            {
+                returns.Add(new XAttribute("enum", retGroup));
+            }
 
             foreach (var parameter in command.Elements("param"))
             {
-                var param = FunctionParameterType(parameter);
-
                 var p = new XElement("param");
                 var pname = new XAttribute("name", parameter.Element("name")?.Value ?? throw new NullReferenceException());
-                var type = new XAttribute
-                (
-                    "type",
-                    param
-                        .Replace("const", string.Empty)
-                        .Replace("struct", string.Empty)
-                        .Trim()
-                );
+                var (paramType, paramGroup) = FunctionParameterType(parameter);
+                var simpleParamType = paramType.Replace("const", string.Empty).Replace("struct", string.Empty).Trim();
+
+                var type = new XAttribute("type", simpleParamType);
 
                 var count = parameter.Attribute("len") != null
                     ? new XAttribute("count", parameter.Attribute("len")?.Value ?? throw new NullReferenceException())
                     : null;
 
-                var flow = new XAttribute("flow", param.Contains("*") && !param.Contains("const") ? "out" : "in");
+                var flow = new XAttribute("flow", paramType.Contains("*") && !paramType.Contains("const") ? "out" : "in");
 
                 p.Add(pname, type, flow);
+                if (paramGroup != null)
+                {
+                    p.Add(new XAttribute("enum", paramGroup));
+                }
                 if (count != null)
                 {
                     p.Add(count);

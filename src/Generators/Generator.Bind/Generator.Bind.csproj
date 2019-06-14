@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Specifications/License.txt" />
+    <EmbeddedResource Include="Specifications/License.txt" LogicalName="Bind.Specifications.License.txt" />
   </ItemGroup>
 
   <Import Project="..\..\..\props\common.props" />

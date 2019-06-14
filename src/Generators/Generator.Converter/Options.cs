@@ -52,7 +52,6 @@ namespace OpenTK.Convert
             'p',
             "prefix",
             HelpText = "The prefix to remove from parsed functions and constants.",
-            Required = true,
             Default = "gl")]
         public string Prefix { get; set; }
 

@@ -23,6 +23,9 @@ namespace Bind.Generators.GL.Compatibility
         public override string Namespace => "OpenToolkit.OpenGL";
 
         /// <inheritdoc/>
-        public override string ProfileName => "gl";
+        public override string ApiName => "gl";
+
+        /// <inheritdoc/>
+        public override string ApiProfile => "compatibility";
     }
 }

@@ -60,17 +60,17 @@ namespace Bind.Generators
         IEnumerable<string> OverrideFiles { get; }
 
         /// <summary>
-        /// Gets the name that corresponds to the "profile" attribute in the OpenGL registry. We use this to distinguish
-        /// between different profiles (e.g. "gl", "glcore", "gles1", "gles2").
+        /// This is the "api" attribute in the XML registry. "gl", "gles2", "gles1" but NOT "glcore".
         /// </summary>
         [NotNull]
-        string ProfileName { get; }
+        string ApiName { get; }
 
         /// <summary>
-        /// Gets the name of the profile's base profile, that is, the profile that the current profile is a subset of.
+        /// This is the "profile" attribute on &lt;require&gt; and such in the registry.
+        /// It's "compatibility" or "core" for desktop GL, null for the rest.
         /// </summary>
         [CanBeNull]
-        string BaseProfileName { get; }
+        string ApiProfile { get; }
 
         /// <summary>
         /// Gets a short-name identifier for the API.
@@ -82,6 +82,9 @@ namespace Bind.Generators
         /// </summary>
         [NotNull]
         string SpecificationFile { get; }
+
+        [NotNull]
+        string KhrSpecificationFile { get; }
 
         /// <summary>
         /// Gets the path to the file that contains the language typemap.

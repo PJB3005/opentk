@@ -45,16 +45,19 @@ namespace Bind.Generators.Bases
         public abstract string APITypemap { get; }
 
         /// <inheritdoc/>
+        public abstract string ApiProfile { get; }
+
+        /// <inheritdoc/>
         public abstract string APIIdentifier { get; }
 
         /// <inheritdoc/>
         public abstract string SpecificationFile { get; }
 
         /// <inheritdoc/>
-        public abstract string ProfileName { get; }
+        public abstract string KhrSpecificationFile { get; }
 
         /// <inheritdoc/>
-        public abstract string BaseProfileName { get; }
+        public abstract string ApiName { get; }
 
         /// <inheritdoc />
         public virtual VersionRange Versions => new VersionRange();

@@ -39,6 +39,9 @@ namespace Bind.Generators.Bases
         public virtual IEnumerable<string> OverrideFiles { get; set; } = new List<string>();
 
         /// <inheritdoc/>
+        public virtual string ApiNameShort => ApiName;
+
+        /// <inheritdoc/>
         public virtual string LanguageTypemap => "csharp.tm";
 
         /// <inheritdoc/>

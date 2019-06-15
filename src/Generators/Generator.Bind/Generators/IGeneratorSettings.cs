@@ -60,6 +60,11 @@ namespace Bind.Generators
         IEnumerable<string> OverrideFiles { get; }
 
         /// <summary>
+        /// This is the glcore/gl difference between core/compat.
+        /// </summary>
+        string ApiNameShort { get; }
+
+        /// <summary>
         /// This is the "api" attribute in the XML registry. "gl", "gles2", "gles1" but NOT "glcore".
         /// </summary>
         [NotNull]

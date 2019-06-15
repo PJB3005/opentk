@@ -37,9 +37,9 @@ namespace Bind.XML.Signatures
             var root = document.Root;
             Debug.Assert(root != null, nameof(root) + " != null");
 
-            var enumValues = ParseEnumValues(settings, root);
+            var enumValues = ParseEnumValues(root);
             var groups = ParseGroups(root);
-            var functions = ParseFunctions(settings, root);
+            var functions = ParseFunctions(root);
             var features = ParseFeatures(settings, root);
 
             return new GLXmlDefinitions(enumValues, groups, functions, features);
@@ -76,6 +76,7 @@ namespace Bind.XML.Signatures
                 .Where(e => ApiProfileMatch(settings, e))
                 .Elements())
             {
+                var name = addition.GetRequiredAttribute("name").Value;
                 GLXmlDefinitions.FeatureElementType elementType;
                 switch (addition.Name.LocalName)
                 {
@@ -83,15 +84,16 @@ namespace Bind.XML.Signatures
                         continue;
                     case "enum":
                         elementType = GLXmlDefinitions.FeatureElementType.Enum;
+                        name = name;
                         break;
                     case "command":
                         elementType = GLXmlDefinitions.FeatureElementType.Function;
+                        name = name;
                         break;
                     default:
                         throw new InvalidDataException();
                 }
 
-                var name = addition.GetRequiredAttribute("name").Value;
                 var additionElement = new GLXmlDefinitions.FeatureElement(name, elementType);
                 yield return additionElement;
             }
@@ -115,15 +117,13 @@ namespace Bind.XML.Signatures
             return true;
         }
 
-        private static Dictionary<string, GLXmlDefinitions.FunctionDefinition> ParseFunctions(
-            IGeneratorSettings settings,
-            XElement root)
+        private static Dictionary<string, GLXmlDefinitions.FunctionDefinition> ParseFunctions(XElement root)
         {
             var dictionary = new Dictionary<string, GLXmlDefinitions.FunctionDefinition>();
             foreach (var command in root.Elements("commands").Elements("command"))
             {
                 var proto = command.GetRequiredElement("proto");
-                var functionName = TrimFunctionName(settings, proto.GetRequiredElement("name").Value);
+                var functionName = proto.GetRequiredElement("name").Value;
 
                 var returnType = ParseType(proto);
 
@@ -155,7 +155,8 @@ namespace Bind.XML.Signatures
 
                 foreach (var groupMember in group.Elements())
                 {
-                    set.Add(groupMember.GetRequiredAttribute("name").Value);
+                    var value = groupMember.GetRequiredAttribute("name").Value;
+                    set.Add(value);
                 }
             }
 
@@ -164,9 +165,7 @@ namespace Bind.XML.Signatures
                 kv => new GLXmlDefinitions.GroupDefinition(kv.Value));
         }
 
-        private static Dictionary<string, GLXmlDefinitions.EnumValueDefinition> ParseEnumValues(
-            IGeneratorSettings settings,
-            XElement root)
+        private static Dictionary<string, GLXmlDefinitions.EnumValueDefinition> ParseEnumValues(XElement root)
         {
             // Build a list of all available tokens.
             // Some tokens have a different value between GL and GLES,
@@ -176,7 +175,7 @@ namespace Bind.XML.Signatures
             var enumerations = root.Elements("enums").Elements("enum");
             foreach (var e in enumerations)
             {
-                var name = TrimEnumName(settings, e.GetRequiredAttribute("name").Value);
+                var name = e.GetRequiredAttribute("name").Value;
                 var api = e.Attribute("api")?.Value;
 
                 // We already have an entry with the same name, but it's API specific.
@@ -205,6 +204,7 @@ namespace Bind.XML.Signatures
                 kv => new GLXmlDefinitions.EnumValueDefinition(kv.Value.value));
         }
 
+        /*
         private static string TrimFunctionName(IGeneratorSettings settings, [NotNull] string name)
         {
             if (name.StartsWith(settings.FunctionPrefix))
@@ -224,6 +224,7 @@ namespace Bind.XML.Signatures
 
             return name;
         }
+        */
 
         private static GLXmlDefinitions.GroupedType ParseType(XElement e)
         {

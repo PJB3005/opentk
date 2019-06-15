@@ -31,5 +31,8 @@ namespace Bind.Generators.GL.Core
 
         /// <inheritdoc/>
         public override string ApiProfile => "core";
+
+        /// <inheritdoc/>
+        public override string ApiNameShort => "glcore";
     }
 }

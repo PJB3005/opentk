@@ -21,6 +21,7 @@ using Bind.Generators;
 using Bind.Generators.ES;
 using Bind.Generators.GL.Compatibility;
 using Bind.Generators.GL.Core;
+using Bind.Stages;
 using Bind.Translation.Mappers;
 using Bind.Typemap;
 using Bind.Writers;
@@ -79,7 +80,8 @@ namespace Bind
             var generators = CreateGenerators();
 
             var stopwatch = Stopwatch.StartNew();
-            await Task.WhenAll(generators.Select(p => Task.Run(() => GenerateBindings(p))));
+            //await Task.WhenAll(generators.Select(p => Task.Run(() => GenerateBindings(p))));
+            generators.ForEach(GenerateBindings);
             stopwatch.Stop();
 
             Console.WriteLine();
@@ -107,28 +109,32 @@ namespace Bind
         {
             var khrSignaturePath = Path.Combine(Arguments.InputPath, "OpenGL", "gl.xml");
 
+            // Step one:
             // Parse data for Khronos' XML registry.
-            // This makes it easier to work with.
-            var parsed = GLXmlReader.ParseXmlRegistry(generatorSettings, khrSignaturePath);
+            // This makes it easy to work on.
+            var data = GLXmlReader.ParseXmlRegistry(generatorSettings, khrSignaturePath);
+
+            // Step two:
+            // Prune constants/functions so only ones required by the highest version still exist.
+            data = PruneEnumsAndFunctions.Prune(generatorSettings, data);
+
+            // Step three:
+            // Prune groups and their contents.
+            data = PruneGroups.Prune(generatorSettings, data);
+
+            // Step ???:
+            // Write the data to disk as C#.
+            Writer2.Write(generatorSettings, data);
 
             /*
-            var signaturePath = Path.Combine(Arguments.InputPath, generatorSettings.SpecificationFile);
-            GLXmlReader.GetAvailableProfiles(khrSignaturePath);
-            if (!_cachedProfiles.TryGetValue(signaturePath, out var profiles))
-            {
-                profiles = SignatureReader.GetAvailableProfiles(signaturePath).ToList();
-                _cachedProfiles.TryAdd(signaturePath, profiles);
-            }
-
             var profileOverrides = OverrideReader
                 .GetProfileOverrides(generatorSettings.OverrideFiles.ToArray())
                 .ToList();
 
-            var baker = new ProfileBaker(profiles, profileOverrides);
+            var baker = new ProfileBaker(new[] { profile }, profileOverrides);
             var bakedProfile = baker.BakeProfile(
-                generatorSettings.ProfileName,
-                generatorSettings.Versions,
-                generatorSettings.BaseProfileName);
+                generatorSettings.ApiNameShort,
+                generatorSettings.Versions);
 
             var documentationPath = Path.Combine(
                 Arguments.DocumentationPath,
@@ -136,6 +142,7 @@ namespace Bind
 
             var doc = DocumentationReader.ReadProfileDocumentation(documentationPath, generatorSettings.FunctionPrefix);
             var bakedDocs = new DocumentationBaker(bakedProfile).BakeDocumentation(doc);
+
 
             var languageTypemapPath = Path.Combine(Arguments.InputPath, generatorSettings.LanguageTypemap);
             if (!_cachedTypemaps.TryGetValue(languageTypemapPath, out var languageTypemap))
@@ -169,7 +176,7 @@ namespace Bind
                 mappedProfile,
                 bakedDocs,
                 generatorSettings.NameContainer);
-                */
+            */
         }
 
         /// <summary>

@@ -91,6 +91,12 @@ namespace Bind.XML.Signatures
             {
                 return $"{Type} {Name}";
             }
+
+            public void Deconstruct(out GroupedType type, out string name)
+            {
+                type = Type;
+                name = Name;
+            }
         }
 
         /// <summary>
@@ -115,6 +121,12 @@ namespace Bind.XML.Signatures
                 }
 
                 return TypeName;
+            }
+
+            public void Deconstruct([NotNull] out string typeName, [CanBeNull] out string groupName)
+            {
+                typeName = TypeName;
+                groupName = GroupName;
             }
         }
 

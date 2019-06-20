@@ -120,7 +120,11 @@ namespace Bind
 
             // Step three:
             // Prune groups and their contents.
-            data = PruneGroups.Prune(generatorSettings, data);
+            data = PruneGroups.Prune(data);
+
+            var parsedFunctions = ParseFunctionTypes.Parse(data);
+
+
 
             // Step ???:
             // Write the data to disk as C#.

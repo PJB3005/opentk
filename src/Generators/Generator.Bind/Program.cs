@@ -124,11 +124,13 @@ namespace Bind
 
             var parsedFunctions = ParseFunctionTypes.Parse(data);
 
+            var typeMap = LoadTypeMap(Path.Combine(Arguments.InputPath, generatorSettings.LanguageTypemap));
 
+            var mappedFunctions = MapLowTypes.Map(typeMap, parsedFunctions.Values);
 
             // Step ???:
             // Write the data to disk as C#.
-            Writer2.Write(generatorSettings, data);
+            Writer2.Write(generatorSettings, data, mappedFunctions);
 
             /*
             var profileOverrides = OverrideReader
@@ -181,6 +183,15 @@ namespace Bind
                 bakedDocs,
                 generatorSettings.NameContainer);
             */
+        }
+
+        private static IReadOnlyDictionary<string, ParsedType> LoadTypeMap(string path)
+        {
+            using (var file = File.OpenRead(path))
+            using (var reader = new StreamReader(file))
+            {
+                return ParsedTypemapReader.Parse(reader);
+            }
         }
 
         /// <summary>

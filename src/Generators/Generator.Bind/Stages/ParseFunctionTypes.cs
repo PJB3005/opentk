@@ -35,19 +35,24 @@ namespace Bind.Stages
             ParsedFunctionParameter.FlowDirection flow;
             if (ConstSpecifierRegex.IsMatch(groupedType.TypeName))
             {
-                flow = ParsedFunctionParameter.FlowDirection.In;
+                flow = ParsedFunctionParameter.FlowDirection.Out;
             }
             else
             {
-                flow = ParsedFunctionParameter.FlowDirection.Out;
+                flow = ParsedFunctionParameter.FlowDirection.In;
             }
             return new ParsedFunctionParameter(name, parsedType, flow);
         }
 
-        private static ParsedGroupedType ParseType(GLXmlDefinitions.GroupedType groupedType)
+        public static ParsedGroupedType ParseType(GLXmlDefinitions.GroupedType groupedType)
         {
             var (type, groupName) = groupedType;
 
+            return new ParsedGroupedType(ParseType(type), groupName);
+        }
+
+        public static ParsedType ParseType(string type)
+        {
             // Use the existing type parser to parse the signature.
             // This is quite inefficient but oh well not like it matters.
             var signature = ParsingHelpers.ParseTypeSignature(type);
@@ -65,7 +70,7 @@ namespace Bind.Stages
             // Add indirection level to the pointer level too.
             pointerLevel += signature.IndirectionLevel;
 
-            return new ParsedGroupedType(new ParsedType(signature.Name, pointerLevel), groupName);
+            return new ParsedType(signature.Name, pointerLevel);
         }
     }
 }

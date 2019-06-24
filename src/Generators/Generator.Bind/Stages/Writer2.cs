@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bind.Extensions;
@@ -22,7 +23,7 @@ namespace Bind.Stages
         /// </summary>
         /// <param name="settings">Settings.</param>
         /// <param name="data">Data.</param>
-        public static void Write(IGeneratorSettings settings, GLXmlDefinitions data)
+        public static void Write(IGeneratorSettings settings, GLXmlDefinitions data, IEnumerable<ParsedFunctionDefinition> functions)
         {
             var rootFolder = Path.Combine(Program.Arguments.OutputPath, settings.OutputSubfolder);
             var @namespace = settings.Namespace;
@@ -84,19 +85,19 @@ namespace Bind.Stages
             {
                 var interfaceName = "I" + settings.ClassName;
                 var path = Path.Combine(projectDir, interfaceName + ".cs");
-                var functions = data.Functions.Values.Select(
+                var functionSignatures = functions.Select(
                     f => new FunctionSignature(
                         f.Name,
                         f.Name,
                         new[] { "oof" },
                         "Core",
                         new Version(),
-                        new TypeSignature(f.ReturnType.TypeName, 0, 0, false, false, false),
+                        new TypeSignature(f.ReturnType.Type.TypeName, f.ReturnType.Type.PointerLevels, 0, false, false, false),
                         f.Parameters.Select(p => new ParameterSignature(
                             p.Name,
-                            new TypeSignature(p.Type.TypeName, 0, 0, false, false, false))).ToList()));
+                            new TypeSignature(p.Type.Type.TypeName, p.Type.Type.PointerLevels, 0, false, false, false))).ToList()));
 
-                var @interface = new Interface(interfaceName, functions);
+                var @interface = new Interface(interfaceName, functionSignatures);
                 @interface.WriteInterface(path, @namespace, string.Empty, new ProfileDocumentation(Array.Empty<FunctionDocumentation>()), settings.Namespace);
             }
         }

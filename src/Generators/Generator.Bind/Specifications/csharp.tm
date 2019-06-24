@@ -18,6 +18,8 @@ GLdouble,           double
 GLclampd,           double
 GLstring,           string
 String,             string
+GLenum,             All
+void,               void
 
 # Pointer types
 GLvoid*,            void*

@@ -13,5 +13,11 @@ namespace Bind
             Type = type;
             GroupName = groupName;
         }
+
+        public void Deconstruct(out ParsedType type, [CanBeNull] out string groupName)
+        {
+            type = Type;
+            groupName = GroupName;
+        }
     }
 }

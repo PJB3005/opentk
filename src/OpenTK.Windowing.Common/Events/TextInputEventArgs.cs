@@ -7,6 +7,8 @@
 // of the MIT license. See the LICENSE file for details.
 //
 
+using System.Text;
+
 namespace OpenTK.Windowing.Common
 {
     /// <summary>
@@ -27,6 +29,11 @@ namespace OpenTK.Windowing.Common
         ///     Gets the Unicode code point that was input.
         /// </summary>
         public int Unicode { get; }
+
+        /// <summary>
+        ///     Gets the Unicode code point that was input, as a <see cref="Rune"/>.
+        /// </summary>
+        public Rune AsRune => new Rune(Unicode);
 
         /// <summary>
         ///     Gets the string representation of the input Unicode code point.
